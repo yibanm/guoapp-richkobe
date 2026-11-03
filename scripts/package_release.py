@@ -200,7 +200,7 @@ elif options.platform == 'windows':
                 archive.write(source, relative)
     artifacts.append(target)
 else:
-    application = root / 'build' / 'macos' / 'Build' / 'Products' / 'Release' / 'duanju_app.app'
+    application = root / 'build' / 'macos' / 'Build' / 'Products' / 'Release' / 'duanju_feifei.app'
     if not application.is_dir():
         raise SystemExit('缺少 macOS 应用：' + str(application))
     verify_macos_application(application)
