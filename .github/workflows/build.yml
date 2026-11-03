@@ -2,6 +2,9 @@ name: Build app packages
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev
 
 permissions:
   contents: read
