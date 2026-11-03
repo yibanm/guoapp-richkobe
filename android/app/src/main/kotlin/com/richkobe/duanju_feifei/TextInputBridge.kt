@@ -1,4 +1,4 @@
-package com.duanju.duanju_feifei
+package com.richkobe.duanjufeifei
 
 import android.app.Activity
 import android.content.Context
