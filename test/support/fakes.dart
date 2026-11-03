@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:duanju_app/core_bridge.dart';
-import 'package:duanju_app/local_files.dart';
-import 'package:duanju_app/local_profiles.dart';
-import 'package:duanju_app/local_store.dart';
-import 'package:duanju_app/models.dart';
-import 'package:duanju_app/ranking_models.dart';
-import 'package:duanju_app/resource_settings.dart';
+import 'package:duanju_feifei/core_bridge.dart';
+import 'package:duanju_feifei/local_files.dart';
+import 'package:duanju_feifei/local_profiles.dart';
+import 'package:duanju_feifei/local_store.dart';
+import 'package:duanju_feifei/models.dart';
+import 'package:duanju_feifei/ranking_models.dart';
+import 'package:duanju_feifei/resource_settings.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,4 +1,4 @@
-import 'package:duanju_app/download_export.dart';
+import 'package:duanju_feifei/download_export.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

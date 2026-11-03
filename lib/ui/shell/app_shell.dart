@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_miuix/miuix.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../download_converter.dart';
 import '../../download_overview.dart';
@@ -217,22 +219,7 @@ class _AppShellState extends State<AppShell> {
       child: switch (AppScope.formFactorOf(context)) {
         FormFactor.phone => Scaffold(
           body: pages,
-          bottomNavigationBar: covered
-              ? null
-              : NavigationBar(
-                  selectedIndex: _tab.index,
-                  onDestinationSelected: (index) =>
-                      _select(AppTab.values[index]),
-                  destinations: [
-                    for (final tab in AppTab.values)
-                      NavigationDestination(
-                        key: ValueKey('nav-${tab.name}'),
-                        icon: _badged(tab, Icon(tab.icon)),
-                        selectedIcon: _badged(tab, Icon(tab.selectedIcon)),
-                        label: tab.label,
-                      ),
-                  ],
-                ),
+          bottomNavigationBar: covered ? null : _phoneBar(),
         ),
         FormFactor.pad || FormFactor.window => _wide(pages),
         FormFactor.television => Scaffold(
@@ -282,6 +269,59 @@ class _AppShellState extends State<AppShell> {
   Widget _badged(AppTab tab, Widget icon) => tab == AppTab.mine
       ? _DownloadBadge(downloads: _downloads!, child: icon)
       : icon;
+
+  /// 手机底栏：悬浮玻璃（默认）/ HyperOS / 原生 Material 三风格切换
+  Widget _phoneBar() => switch (widget.store.uiStyle) {
+    'miui' => MiuixNavigationBar(
+      children: [
+        for (final tab in AppTab.values)
+          MiuixNavigationBarItem(
+            key: ValueKey('nav-${tab.name}'),
+            selected: tab == _tab,
+            onPressed: () => _select(tab),
+            icon: _badged(
+              tab,
+              Icon(tab == _tab ? tab.selectedIcon : tab.icon),
+            ),
+            label: tab.label,
+          ),
+      ],
+    ),
+    'material' => NavigationBar(
+      selectedIndex: _tab.index,
+      onDestinationSelected: (index) => _select(AppTab.values[index]),
+      destinations: [
+        for (final tab in AppTab.values)
+          NavigationDestination(
+            key: ValueKey('nav-${tab.name}'),
+            icon: _badged(tab, Icon(tab.icon)),
+            selectedIcon: _badged(tab, Icon(tab.selectedIcon)),
+            label: tab.label,
+          ),
+      ],
+    ),
+    // glass：悬浮玻璃胶囊底栏，SafeArea 兜住手势条留白；
+    // 独立于 GlassScaffold 使用时须手动包隔离作用域，模糊才只采样身后内容
+    _ => SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: GlassIsolationScope(
+          child: GlassTabBar.bottom(
+            selectedIndex: _tab.index,
+            onTabSelected: (index) => _select(AppTab.values[index]),
+            tabs: [
+              for (final tab in AppTab.values)
+                GlassTab(
+                  icon: _badged(tab, Icon(tab.icon)),
+                  label: tab.label,
+                ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  };
 
   Widget _televisionHeader() {
     final tabs = Row(

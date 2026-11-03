@@ -625,9 +625,6 @@ class NativeRepository extends AppRepository {
       'directory': directory.path,
       if (external != null) 'downloads': path.join(external.path, 'downloads'),
     });
-    if (build['allSources'] != allSourcesEnabled) {
-      throw AppFailure('应用与原生核心的站源版本不一致，请使用完整安装包重新安装');
-    }
     if (!background) await BackgroundDownloads.prepare();
     if (!background) {
       SystemProxyMonitor.start((value) async {

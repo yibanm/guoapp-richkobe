@@ -131,7 +131,7 @@ def build_macos_dmg(display, staging, staged, target):
 
 
 def package_macos(application):
-    display = '真果鉴' if variant.all_sources else '红果鉴'
+    display = '霏果鉴' if variant.all_sources else '霏果鉴'
     staging = root / 'build' / 'macos-dmg'
     if staging.exists():
         shutil.rmtree(staging)
@@ -184,7 +184,7 @@ if options.platform == 'android':
         artifacts.append(target)
 elif options.platform == 'windows':
     bundle = root / 'build' / 'windows' / 'x64' / 'runner' / 'Release'
-    required = ['zhenguojian.exe', 'duanju_core.dll', 'flutter_windows.dll', 'libffmpegkit.dll',
+    required = ['feiguojian.exe', 'duanju_core.dll', 'flutter_windows.dll', 'libffmpegkit.dll',
                 'libmpv-2.dll', 'msvcp140.dll', 'vcruntime140.dll',
                 'data/icudtl.dat', 'data/app.so']
     missing = [name for name in required if not (bundle / name).is_file()]
@@ -195,7 +195,7 @@ elif options.platform == 'windows':
         for source in sorted(bundle.rglob('*')):
             if source.is_file():
                 relative = source.relative_to(bundle).as_posix()
-                if relative == 'zhenguojian.exe':
+                if relative == 'feiguojian.exe':
                     relative = variant.slug + '.exe'
                 archive.write(source, relative)
     artifacts.append(target)

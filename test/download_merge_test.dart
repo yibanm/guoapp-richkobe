@@ -1,7 +1,7 @@
-import 'package:duanju_app/core_bridge.dart';
-import 'package:duanju_app/download_merge.dart';
-import 'package:duanju_app/media_pipeline.dart';
-import 'package:duanju_app/models.dart';
+import 'package:duanju_feifei/core_bridge.dart';
+import 'package:duanju_feifei/download_merge.dart';
+import 'package:duanju_feifei/media_pipeline.dart';
+import 'package:duanju_feifei/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

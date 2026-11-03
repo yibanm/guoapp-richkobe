@@ -28,7 +28,7 @@ jobs:
       - &setup-flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.47.4'
+          flutter-version: '3.47.9'
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
@@ -39,12 +39,7 @@ jobs:
       # 测试当前不阻塞出包（开发优先、集中验证暂缓），结果仍会显示在运行详情里。
       - run: flutter test --dart-define=DISABLE_REMOTE_IMAGES=true
         continue-on-error: true
-      - run: flutter test --dart-define=DISABLE_REMOTE_IMAGES=true --dart-define=ALL_SOURCES=true
-        continue-on-error: true
       - run: go test -race ./...
-        working-directory: native
-        continue-on-error: true
-      - run: go test -race -ldflags="-X duanjuapp/native/core.buildAllSources=true" ./...
         working-directory: native
         continue-on-error: true
 
@@ -86,10 +81,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - edition: hongguojian
+          - edition: feiguojian
             arguments: ''
-          - edition: zhenguojian
-            arguments: '--all-sources'
     steps:
       - uses: actions/checkout@v4
       - &setup-python
@@ -276,10 +269,9 @@ jobs:
         run: |
           set -euo pipefail
           cat > notes.md <<EOF
-          版本 ${VERSION}。两个版本功能相同，区别只在站源范围，按需选择：
+          版本 ${VERSION}。单风味构建，默认包含全部站源，可在设置里逐个开关：
 
-          - 红果鉴 hongguojian：仅红果站源
-          - 真果鉴 zhenguojian：全部站源
+          - 霏果鉴 feiguojian：全部站源
 
           Android：
           - *-arm64-v8a.apk：适用于较新的安卓设备
@@ -290,10 +282,10 @@ jobs:
           - *-ios-unsigned.ipa：未签名 IPA，可用相关工具安装
 
           Windows：
-          - *-windows-x64.zip：解压后运行 hongguojian.exe 或 zhenguojian.exe
+          - *-windows-x64.zip：解压后运行 feiguojian.exe
 
           macOS：
-          - *-macos-universal.dmg：适用于 macOS 12 及以上的 Apple 芯片和 Intel 电脑，打开后拖入 Applications；未经公证，首次打开前在终端执行 xattr -dr com.apple.quarantine /Applications/红果鉴.app（真果鉴为 真果鉴.app）
+          - *-macos-universal.dmg：适用于 macOS 12 及以上的 Apple 芯片和 Intel 电脑，打开后拖入 Applications；未经公证，首次打开前在终端执行 xattr -dr com.apple.quarantine /Applications/霏果鉴.app
 
           签名证书 SHA-256：${ANDROID_CERT_SHA256}
           EOF
@@ -308,7 +300,7 @@ jobs:
             { printf '更新内容：\n\n%s\n\n' "$changes"; cat notes.md; } > notes.tmp
             mv notes.tmp notes.md
           fi
-          gh release create "$TAG" release/* --target "$GITHUB_SHA" --title "红果鉴 / 真果鉴 ${VERSION}" --notes-file notes.md
+          gh release create "$TAG" release/* --target "$GITHUB_SHA" --title "霏果鉴 / 霏果鉴 ${VERSION}" --notes-file notes.md
       - name: 推送到 Telegram 频道
         continue-on-error: true
         env:
@@ -324,7 +316,7 @@ jobs:
           fi
           changes="$(cat changes.md)"
           url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
-          text="红果鉴 / 真果鉴 ${VERSION} 已发布"
+          text="霏果鉴 / 霏果鉴 ${VERSION} 已发布"
           if [ -n "$changes" ]; then
             text="$(printf '%s\n\n更新内容：\n\n%s' "$text" "${changes:0:3500}")"
           fi

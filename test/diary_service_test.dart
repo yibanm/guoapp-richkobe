@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:duanju_app/diary_service.dart';
+import 'package:duanju_feifei/diary_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_miuix/miuix.dart';
 
 import '../app_build.dart';
 import '../app_device.dart';
@@ -196,7 +197,14 @@ class _DuanjuAppState extends State<DuanjuApp> with WidgetsBindingObserver {
           ? FocusHighlightStrategy.alwaysTraditional
           : FocusHighlightStrategy.alwaysTouch,
     );
-    return MaterialApp(
+    // HyperOS 风格开启时向子树提供 Miuix 主题，亮度跟随应用主题模式解析
+    final uiStyle = store?.uiStyle ?? 'glass';
+    final uiBrightness = switch (store?.themeMode) {
+      'light' => Brightness.light,
+      'dark' => Brightness.dark,
+      _ => MediaQuery.platformBrightnessOf(context),
+    };
+    final application = MaterialApp(
       navigatorKey: _navigator,
       title: appName,
       debugShowCheckedModeBanner: false,
@@ -262,6 +270,9 @@ class _DuanjuAppState extends State<DuanjuApp> with WidgetsBindingObserver {
         _ => AppShell(key: ValueKey(store.profileEpoch), store: store),
       },
     );
+    return uiStyle == 'miui'
+        ? MiuixTheme(data: MiuixThemeData.of(uiBrightness), child: application)
+        : application;
   }
 }
 

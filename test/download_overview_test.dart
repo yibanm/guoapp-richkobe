@@ -1,5 +1,5 @@
-import 'package:duanju_app/download_overview.dart';
-import 'package:duanju_app/local_store.dart';
+import 'package:duanju_feifei/download_overview.dart';
+import 'package:duanju_feifei/local_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

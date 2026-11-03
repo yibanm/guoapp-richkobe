@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:duanju_app/app_build.dart';
-import 'package:duanju_app/local_profiles.dart';
-import 'package:duanju_app/local_store.dart';
-import 'package:duanju_app/models.dart';
+import 'package:duanju_feifei/app_build.dart';
+import 'package:duanju_feifei/local_profiles.dart';
+import 'package:duanju_feifei/local_store.dart';
+import 'package:duanju_feifei/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';
@@ -132,9 +132,7 @@ void main() {
       final store = await openStore();
       expect(
         store.sources.map((site) => site.id),
-        allSourcesEnabled
-            ? ['hongguo', 'hanxiaoquan', 'guipian', 'sorani']
-            : ['hongguo'],
+        ['hongguo', 'hanxiaoquan', 'guipian', 'sorani'],
       );
       for (final site in SourceSite.restrictedValues) {
         expect(store.sourceEnabled(site.id), isFalse, reason: site.id);
@@ -142,26 +140,19 @@ void main() {
       }
     });
 
-    test('switches persist and follow the build edition', () async {
+    test('switches persist across restarts', () async {
       final store = await openStore();
       await store.setSourceEnabled('hongguo', false);
-      if (allSourcesEnabled) {
-        await store.setSourceEnabled('dsd', true);
-      } else {
-        await expectLater(
-          store.setSourceEnabled('dsd', true),
-          throwsStateError,
-        );
-      }
+      await store.setSourceEnabled('dsd', true);
 
       final restarted = await restartStore(store);
       expect(restarted.allowsSource('hongguo'), isFalse);
-      expect(restarted.allowsSource('dsd'), allSourcesEnabled);
-      expect(restarted.source, allSourcesEnabled ? 'hanxiaoquan' : '');
+      expect(restarted.allowsSource('dsd'), isTrue);
+      expect(restarted.source, 'hanxiaoquan');
     });
 
     for (final source in ['huangdou', 'dsd']) {
-      test('a restored $source user keeps identity across editions', () async {
+      test('a restored $source user keeps identity', () async {
         final store = await openStore({
           ..._viewer([source]),
           'sourceSwitches': jsonEncode({source: true}),
@@ -170,23 +161,21 @@ void main() {
         expect(store.configurationError, isNull);
         expect(store.profile.id, 'viewer');
         expect(store.profile.sources, [source]);
-        expect(store.allowsSource(source), allSourcesEnabled);
+        expect(store.allowsSource(source), isTrue);
         expect(store.allowsSource('hongguo'), isFalse);
-        expect(store.source, allSourcesEnabled ? source : '');
+        expect(store.source, source);
       });
     }
   });
 
   test('build edition names match the source list', () {
-    expect(appSlug, allSourcesEnabled ? 'zhenguojian' : 'hongguojian');
-    expect(appName, allSourcesEnabled ? '真果鉴' : '红果鉴');
+    expect(appSlug, 'feiguojian');
+    expect(appName, '霏果鉴');
     expect(
       SourceSite.values.map((site) => site.id),
-      allSourcesEnabled
-          ? SourceSite.allValues.map((site) => site.id)
-          : ['hongguo'],
+      SourceSite.allValues.map((site) => site.id),
     );
     expect(SourceSite.isKnown('dsd'), isTrue);
-    expect(SourceSite.isAvailable('dsd'), allSourcesEnabled);
+    expect(SourceSite.isAvailable('dsd'), isTrue);
   });
 }

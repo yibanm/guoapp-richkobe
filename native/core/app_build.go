@@ -2,13 +2,12 @@ package core
 
 import "errors"
 
-var buildAllSources = "false"
-
 var errNativeBuildSource = errors.New("当前版本不包含此站源")
 
+// 单风味构建：始终包含全部站源，站源开关由设置页控制
 func nativeSourceAvailable(source string) bool {
 	source = canonicalProviderSource(source)
-	return source == sourceHongguo || buildAllSources == "true" && isHuangguoProviderSource(source)
+	return source == sourceHongguo || isHuangguoProviderSource(source)
 }
 
 func nativeDramaAvailable(drama nativeDrama) bool {

@@ -1,6 +1,6 @@
-import 'package:duanju_app/core_bridge.dart';
-import 'package:duanju_app/resource_settings.dart';
-import 'package:duanju_app/resource_settings_editor.dart';
+import 'package:duanju_feifei/core_bridge.dart';
+import 'package:duanju_feifei/resource_settings.dart';
+import 'package:duanju_feifei/resource_settings_editor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

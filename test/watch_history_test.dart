@@ -1,4 +1,4 @@
-import 'package:duanju_app/watch_history.dart';
+import 'package:duanju_feifei/watch_history.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

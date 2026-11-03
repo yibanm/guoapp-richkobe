@@ -1,18 +1,9 @@
 import java.util.Properties
-import java.util.Base64
 
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
 }
-
-val dartDefines = providers.gradleProperty("dart-defines").orNull.orEmpty()
-    .split(",").filter { it.isNotEmpty() }
-    .associate {
-        val decoded = String(Base64.getDecoder().decode(it), Charsets.UTF_8)
-        decoded.substringBefore("=") to decoded.substringAfter("=", "")
-    }
-val allSources = dartDefines["ALL_SOURCES"] == "true"
 
 val releaseKey = rootProject.file("key.properties")
 val releaseProperties = Properties()
@@ -29,7 +20,7 @@ if (releaseKey.exists()) {
 val hasReleaseKey = releaseProperties.getProperty("storeFile") != null
 
 android {
-    namespace = "com.duanju.duanju_app"
+    namespace = "com.richkobe.duanjufeifei"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.2.13676358"
 
@@ -39,13 +30,14 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.duanju.duanju_app"
+        applicationId = "com.richkobe.duanjufeifei"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["appLabel"] = if (allSources) "真果鉴" else "红果鉴"
-        manifestPlaceholders["appBanner"] = if (allSources) "@drawable/tv_banner_all_sources" else "@drawable/tv_banner"
+        // 单风味：应用名与电视横幅固定，站源范围由设置页控制
+        manifestPlaceholders["appLabel"] = "霏果鉴"
+        manifestPlaceholders["appBanner"] = "@drawable/tv_banner"
     }
 
     signingConfigs {

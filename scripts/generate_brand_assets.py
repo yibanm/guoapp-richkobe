@@ -7,7 +7,7 @@ import resvg_py
 from PIL import Image, ImageDraw, ImageFont
 
 root = Path(__file__).resolve().parents[1]
-parser = argparse.ArgumentParser(description='从统一图形生成红果鉴 / 真果鉴平台资源；需要 Pillow 和 resvg-py。')
+parser = argparse.ArgumentParser(description='从统一图形生成霏果鉴 / 霏果鉴平台资源；需要 Pillow 和 resvg-py。')
 parser.add_argument('--output', type=Path, default=root)
 parser.add_argument('--font', type=Path, default=Path('/System/Library/Fonts/PingFang.ttc'))
 options = parser.parse_args()
@@ -70,7 +70,7 @@ if not font_path.exists():
             font_path = Path(candidate)
             break
 font = ImageFont.truetype(str(font_path), 76)
-for name, resource in [('红果鉴', 'tv_banner'), ('真果鉴', 'tv_banner_all_sources')]:
+for name, resource in [('霏果鉴', 'tv_banner'), ('霏果鉴', 'tv_banner_all_sources')]:
     banner = Image.new('RGB', (640, 360), '#F5F9FC')
     badge = rounded.resize((180, 180), Image.Resampling.LANCZOS)
     banner.paste(badge, (44, 90), badge)

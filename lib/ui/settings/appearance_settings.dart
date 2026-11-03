@@ -19,6 +19,12 @@ const displayModes = {
   'window': '窗口',
 };
 
+const uiStyles = {
+  'glass': '悬浮玻璃',
+  'miui': 'HyperOS 风格',
+  'material': '原生 Material',
+};
+
 Map<String, String> get availableDisplayModes => {
   for (final MapEntry(:key, :value) in displayModes.entries)
     if (desktopPlatform || key != 'window') key: value,
@@ -122,6 +128,28 @@ class AppearanceSettings extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+        GroupCard(
+          children: [
+            SettingsTile(
+              title: '界面风格',
+              subtitle: uiStyles[store.uiStyle] ?? uiStyles['glass']!,
+              onTap: () async {
+                final selection = await showOptionDialog(
+                  context,
+                  title: '界面风格',
+                  options: uiStyles,
+                  selected: store.uiStyle,
+                );
+                if (selection != null && context.mounted) {
+                  await saveSetting(
+                    context,
+                    () => store.setUiStyle(selection),
+                  );
+                }
+              },
             ),
           ],
         ),

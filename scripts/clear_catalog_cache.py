@@ -7,8 +7,7 @@ import sys
 from pathlib import Path
 
 APPS = {
-    "zhen": ("真果鉴", "zhenguojian.exe"),
-    "hong": ("红果鉴", "hongguojian.exe"),
+    "app": ("霏果鉴", "feiguojian.exe"),
 }
 
 
@@ -33,7 +32,7 @@ def remove(path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="清空 Windows 版剧库缓存，模拟首次加载")
-    parser.add_argument("--app", choices=APPS, default="zhen")
+    parser.add_argument("--app", choices=APPS, default="app")
     parser.add_argument("--covers", action="store_true", help="同时清空海报缓存")
     args = parser.parse_args()
 

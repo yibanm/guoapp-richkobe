@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:duanju_app/cover_loader.dart';
-import 'package:duanju_app/models.dart';
+import 'package:duanju_feifei/cover_loader.dart';
+import 'package:duanju_feifei/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

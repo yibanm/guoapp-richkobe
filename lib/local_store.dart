@@ -384,6 +384,12 @@ class LocalStore extends ChangeNotifier {
   }
 
   bool get followSystemColor => _flag('followSystemColor', true);
+
+  /// 界面风格：glass 悬浮玻璃底栏（默认）、miui HyperOS 风格、material 原生 Material
+  String get uiStyle {
+    final value = _settings['uiStyle'];
+    return value == 'miui' || value == 'material' ? value as String : 'glass';
+  }
   ThemeColor get themeColor =>
       ThemeColor.byName(_settings['themeColor']) ?? ThemeColor.orange;
   bool get sideBarExpanded => preferences.getBool('sideBarExpanded') ?? true;
@@ -510,6 +516,10 @@ class LocalStore extends ChangeNotifier {
       : Future.value();
   Future<void> setFollowSystemColor(bool value) =>
       _setting('followSystemColor', value);
+  Future<void> setUiStyle(String value) =>
+      value == 'glass' || value == 'miui' || value == 'material'
+      ? _setting('uiStyle', value)
+      : Future.value();
   Future<void> setThemeColor(ThemeColor value) =>
       _setting('themeColor', value.name);
   Future<void> setSideBarExpanded(bool value) => _queue(() async {
@@ -934,6 +944,7 @@ class LocalStore extends ChangeNotifier {
       'profiles': _profiles.map((profile) => profile.toJson()).toList(),
       'displayMode': displayMode,
       'themeMode': themeMode,
+      'uiStyle': uiStyle,
       'followSystemColor': followSystemColor,
       'themeColor': themeColor.name,
       'forceLogin': forceLogin,

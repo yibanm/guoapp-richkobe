@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:duanju_app/app_build.dart';
-import 'package:duanju_app/core_bridge.dart';
-import 'package:duanju_app/local_profiles.dart';
-import 'package:duanju_app/models.dart';
+import 'package:duanju_feifei/core_bridge.dart';
+import 'package:duanju_feifei/local_profiles.dart';
+import 'package:duanju_feifei/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';
@@ -72,7 +71,7 @@ void main() {
     for (final request in _requests(repository, denied)) {
       await expectLater(
         request(),
-        _failure(allSourcesEnabled ? '当前用户没有此操作权限' : '当前版本不包含此站源'),
+        _failure('当前用户没有此操作权限'),
       );
     }
     final allowed = drama('1');

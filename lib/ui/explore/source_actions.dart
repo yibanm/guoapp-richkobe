@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../app_build.dart';
 import '../../local_store.dart';
 import '../../models.dart';
 import '../search/search_page.dart';
@@ -17,9 +16,8 @@ Future<void> pickSource(BuildContext anchor, LocalStore store) async {
     ],
     selected: store.source,
     grid: ChoiceGrid.sources,
-    action: allSourcesEnabled
-        ? (
-            label: '管理站源',
+    action: (
+        label: '管理站源',
             icon: Icons.tune_rounded,
             onPressed: () => openPage<void>(
               anchor,
@@ -28,8 +26,7 @@ Future<void> pickSource(BuildContext anchor, LocalStore store) async {
                 body: SourcesView(store: store),
               ),
             ),
-          )
-        : null,
+          ),
   );
   if (value == null || value == store.source) return;
   try {

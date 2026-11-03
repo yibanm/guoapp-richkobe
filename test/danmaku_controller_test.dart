@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:duanju_app/core_bridge.dart';
-import 'package:duanju_app/danmaku_controller.dart';
-import 'package:duanju_app/danmaku_models.dart';
-import 'package:duanju_app/models.dart';
+import 'package:duanju_feifei/core_bridge.dart';
+import 'package:duanju_feifei/danmaku_controller.dart';
+import 'package:duanju_feifei/danmaku_models.dart';
+import 'package:duanju_feifei/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';

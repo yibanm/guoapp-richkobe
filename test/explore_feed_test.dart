@@ -1,7 +1,6 @@
-import 'package:duanju_app/app_build.dart';
-import 'package:duanju_app/explore_feed.dart';
-import 'package:duanju_app/local_store.dart';
-import 'package:duanju_app/ranking_models.dart';
+import 'package:duanju_feifei/explore_feed.dart';
+import 'package:duanju_feifei/local_store.dart';
+import 'package:duanju_feifei/ranking_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fakes.dart';
@@ -106,8 +105,8 @@ void main() {
     });
     await store.setSourceEnabled('hongguo', false);
     await pumpEventQueue();
-    expect(explore.source?.id, allSourcesEnabled ? 'hanxiaoquan' : null);
-    expect(explore.feed == null, !allSourcesEnabled);
+    expect(explore.source?.id, 'hanxiaoquan');
+    expect(explore.feed, isNotNull);
 
     await store.setSourceEnabled('hongguo', true);
     await pumpEventQueue();
