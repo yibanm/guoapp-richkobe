@@ -126,6 +126,12 @@ class _AppBootstrapState extends State<AppBootstrap>
         LocalFiles(Directory(path.join(support.path, 'store'))),
       );
       if (!mounted) return;
+      // 自定义源配置独立于 settings.json，启动时从原生层读入注入
+      try {
+        local.applyCustomSources(await repository.customSources());
+      } catch (_) {
+        local.applyCustomSources(const []);
+      }
       setState(() {
         store = local;
         repository.access = local;

@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import 'models.dart';
+import 'custom_sources.dart';
 import 'danmaku_models.dart';
 import 'background_downloads.dart';
 import 'local_store.dart';
@@ -71,6 +72,11 @@ abstract class AppRepository {
   Future<ResourceSettings> saveResourceSettings(
     ResourceSettings settings,
   ) async => throw AppFailure('当前环境不支持资源设置');
+  Future<List<CustomSource>> customSources() async => const [];
+  Future<void> saveCustomSources(List<CustomSource> sources) async =>
+      throw AppFailure('当前环境不支持自定义源');
+  Future<String> probeCustomSource(String sourceId) async =>
+      throw AppFailure('当前环境不支持自定义源');
   final catalogUpdates = CatalogUpdates();
   Future<void> cancelPreload() async {}
   Future<PlaybackPlan?> preload(
@@ -198,6 +204,37 @@ class NativeRepository extends AppRepository {
     return ResourceSettings.fromJson(
       await _call({'action': 'resourceSettings'}),
     );
+  }
+
+  @override
+  Future<List<CustomSource>> customSources() async {
+    _adminPermission();
+    final result = await _call({'action': 'customSources'});
+    final profiles = result['profiles'];
+    if (profiles is! List) return const [];
+    return [
+      for (final item in profiles)
+        if (item is Map<String, dynamic>) CustomSource.fromJson(item),
+    ];
+  }
+
+  @override
+  Future<void> saveCustomSources(List<CustomSource> sources) async {
+    _adminPermission();
+    await _call({
+      'action': 'saveCustomSources',
+      'profiles': [for (final source in sources) source.toJson()],
+    });
+  }
+
+  @override
+  Future<String> probeCustomSource(String sourceId) async {
+    _adminPermission();
+    final result = await _call({
+      'action': 'probeCustomSource',
+      'source': sourceId,
+    });
+    return result['message'] as String? ?? '连通成功';
   }
 
   @override
@@ -374,6 +411,8 @@ class NativeRepository extends AppRepository {
   );
 
   void _authorize(String source, {bool download = false}) {
+    // 自定义源不走内置站源白名单与用户站源权限，管理权在自定义源设置页（仅管理员）
+    if (source.startsWith('custom:')) return;
     if (!SourceSite.isAvailable(source)) {
       throw AppFailure('当前版本不包含此站源');
     }

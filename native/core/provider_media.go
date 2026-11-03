@@ -121,6 +121,9 @@ func (d *Downloader) resolveProviderMedia(ctx context.Context, task Task) (provi
 	if chapter.Source == "" {
 		chapter.Source = sourceFromDramaID(task.DramaID)
 	}
+	if isCustomSource(chapter.Source) {
+		return customResolve(chapter)
+	}
 	if chapter.Source == sourceCloudFront {
 		return d.resolveLegacyMedia(ctx, task)
 	}

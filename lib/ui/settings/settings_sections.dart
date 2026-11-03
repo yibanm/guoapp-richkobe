@@ -12,6 +12,7 @@ import '../../playback_preferences.dart';
 import '../../resource_settings.dart';
 import '../../resource_settings_editor.dart';
 import '../app_scope.dart';
+import 'custom_sources_view.dart';
 import '../update_prompt.dart';
 import '../users/users_view.dart';
 import '../widgets/focus_ring.dart';
@@ -279,6 +280,13 @@ class SettingsSection extends StatelessWidget {
             title: '站源管理',
             subtitle: '开启或关闭站源',
             onTap: () => open('站源管理', (_) => SourcesView(store: store)),
+          ),
+          const Divider(indent: 16, endIndent: 16),
+          SettingsTile(
+            title: '自定义源',
+            subtitle: '论坛空间页作目录、帖内视频直链作分集',
+            onTap: () =>
+                open('自定义源', (_) => CustomSourcesView(store: store)),
           ),
         ],
       ),

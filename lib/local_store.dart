@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'catalog_sort.dart';
+import 'custom_sources.dart';
 import 'diary_service.dart';
 import 'download_preferences.dart';
 import 'follow_state.dart';
@@ -302,11 +303,17 @@ class LocalStore extends ChangeNotifier {
   bool get canDownload => !locked && (profile.admin || profile.download);
   bool allowsSource(String source) =>
       !locked &&
-      SourceSite.isAvailable(source) &&
+      (source.startsWith('custom:')
+          ? customSources.any((site) => site.id == source)
+          : SourceSite.isAvailable(source)) &&
       profile.allows(source) &&
       sourceEnabled(source);
-  List<SourceSite> get sources =>
-      SourceSite.values.where((site) => allowsSource(site.id)).toList();
+  List<SourceSite> get sources => [
+    ...SourceSite.values.where((site) => allowsSource(site.id)),
+    for (final custom in customSources)
+      if (allowsSource(custom.id))
+        SourceSite(custom.id, custom.name, '自定义论坛源'),
+  ];
   List<SourceSite> get permittedSources => [
     for (final site in SourceSite.values)
       if (!locked && profile.allows(site.id)) site,
@@ -315,7 +322,8 @@ class LocalStore extends ChangeNotifier {
   bool sourceEnabled(String source) => switch (_settings['sourceSwitches']) {
     final Map switches when switches[source] is bool =>
       switches[source] as bool,
-    _ => !SourceSite.isRestricted(source),
+    // 自定义源默认开启，开关在自定义源设置页管理
+    _ => source.startsWith('custom:') || !SourceSite.isRestricted(source),
   };
 
   Future<void> setSourceEnabled(String source, bool enabled) {
@@ -507,6 +515,14 @@ class LocalStore extends ChangeNotifier {
   Future<void> setSource(String value) {
     if (!allowsSource(value)) return Future.error(StateError('当前用户没有此站源权限'));
     return _userSetting('source', value);
+  }
+
+  /// 自定义源列表由原生层 custom_sources.json 提供，启动时注入，不落 settings.json
+  List<CustomSource> customSources = const [];
+
+  void applyCustomSources(List<CustomSource> list) {
+    customSources = list;
+    notifyListeners();
   }
 
   Future<void> setDisplayMode(String value) => _displayModes.contains(value)

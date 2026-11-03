@@ -6,6 +6,9 @@ var errNativeBuildSource = errors.New("当前版本不包含此站源")
 
 // 单风味构建：始终包含全部站源，站源开关由设置页控制
 func nativeSourceAvailable(source string) bool {
+	if isCustomSource(source) {
+		return true
+	}
 	source = canonicalProviderSource(source)
 	return source == sourceHongguo || isHuangguoProviderSource(source)
 }

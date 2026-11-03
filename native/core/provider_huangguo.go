@@ -83,9 +83,14 @@ func providerChapterID(source, sourceID, chapterKey string) string {
 }
 
 func splitProviderDramaID(id string) (source, sourceID string, ok bool) {
+	// 自定义源 id 为三段式 custom:<slug>:<tid>，先于单冒号切分处理
+	if slug, tid, customOK := splitCustomDramaID(id); customOK {
+		return customSourcePrefix + ":" + slug, tid, true
+	}
 	source, sourceID, ok = strings.Cut(strings.TrimSpace(id), ":")
 	source = canonicalProviderSource(source)
-	if !ok || strings.TrimSpace(sourceID) == "" || !isHuangguoProviderSource(source) {
+	if !ok || strings.TrimSpace(sourceID) == "" ||
+		!isHuangguoProviderSource(source) && !isCustomSource(source) {
 		return "", "", false
 	}
 	return source, strings.TrimSpace(sourceID), true
@@ -398,6 +403,9 @@ func (d *Downloader) fetchProviderText(ctx context.Context, rawURL, referer stri
 				req.Header.Set("Referer", referer)
 			}
 			req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+			if cookie, ok := ctx.Value(providerTextCookieKey{}).(string); ok && cookie != "" {
+				req.Header.Set("Cookie", cookie)
+			}
 			if noCache, _ := ctx.Value(providerTextNoCacheKey{}).(bool); noCache {
 				req.Header.Set("Cache-Control", "no-cache")
 			}

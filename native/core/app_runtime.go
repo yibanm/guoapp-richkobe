@@ -105,6 +105,7 @@ type nativeInput struct {
 	JobID           string                  `json:"jobId"`
 	Command         string                  `json:"command"`
 	Action          string                  `json:"action"`
+	Profiles        json.RawMessage         `json:"profiles"`
 	Directory       string                  `json:"directory"`
 	Downloads       string                  `json:"downloads"`
 	Source          string                  `json:"source"`
@@ -168,6 +169,7 @@ type nativeEngine struct {
 	covers           *nativeCoverCache
 	stream           *nativeStreamServer
 	playbacks        map[string]nativePlaybackChoice
+	customSources    *customSourceManager
 	playbackMu       sync.Mutex
 	playbackSequence int64
 	playbackCancel   context.CancelFunc
@@ -275,6 +277,7 @@ func newNativeEngine(directory, downloads string) (*nativeEngine, error) {
 			return nil
 		}}
 	engine := &nativeEngine{downloader: d, directory: directory, defaultDownloads: nativeDefaultDownloads(directory), catalogs: map[string][]nativeDrama{}, catalogStates: map[string]nativeCatalogState{}}
+	engine.customSources = newCustomSourceManager(directory, newCustomStore())
 	if filepath.IsAbs(downloads) {
 		engine.defaultDownloads = filepath.Clean(downloads)
 	}
@@ -363,6 +366,12 @@ func nativeDispatch(input nativeInput) (any, error) {
 		return true, engine.updateSystemProxy(input.SystemProxy)
 	case "resourceSettings":
 		return engine.resourceSettings(), nil
+	case "customSources":
+		return engine.customSourcesList()
+	case "saveCustomSources":
+		return engine.customSourcesSave(input.Profiles)
+	case "probeCustomSource":
+		return engine.customSourcesProbe(ctx, input.Source)
 	case "saveResourceSettings":
 		return engine.saveResourceSettings(input.Settings)
 	case "controlDownloadBatch":
@@ -467,6 +476,9 @@ func nativeDispatch(input nativeInput) (any, error) {
 
 func (engine *nativeEngine) nativeCatalog(ctx context.Context, input nativeInput) (nativeCatalogResult, error) {
 	source := canonicalProviderSource(input.Source)
+	if isCustomSource(source) {
+		return engine.customCatalogResult(ctx, input)
+	}
 	if !isHuangguoProviderSource(source) {
 		return nativeCatalogResult{}, errors.New("请选择有效站源")
 	}
@@ -697,6 +709,9 @@ func (engine *nativeEngine) nativeDetail(ctx context.Context, drama nativeDrama)
 	source, sourceID, valid := splitProviderDramaID(drama.ID)
 	if !valid {
 		return nil, errors.New("剧集信息无效，请刷新剧库")
+	}
+	if isCustomSource(source) {
+		return engine.customDetailResult(ctx, source, sourceID)
 	}
 	var title string
 	var raw Drama
