@@ -274,14 +274,14 @@ class SettingsSection extends StatelessWidget {
     final editable = settings != null && !editor.saving;
     return [
       SettingsCard(
-          children: [
-            SettingsTile(
-              title: '站源管理',
-              subtitle: '开启或关闭站源',
-              onTap: () => open('站源管理', (_) => SourcesView(store: store)),
-            ),
-          ],
-        ),
+        children: [
+          SettingsTile(
+            title: '站源管理',
+            subtitle: '开启或关闭站源',
+            onTap: () => open('站源管理', (_) => SourcesView(store: store)),
+          ),
+        ],
+      ),
       SettingsCard(
         children: [
           ?_editorError(),

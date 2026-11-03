@@ -144,10 +144,7 @@ class AppearanceSettings extends StatelessWidget {
                   selected: store.uiStyle,
                 );
                 if (selection != null && context.mounted) {
-                  await saveSetting(
-                    context,
-                    () => store.setUiStyle(selection),
-                  );
+                  await saveSetting(context, () => store.setUiStyle(selection));
                 }
               },
             ),

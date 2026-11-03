@@ -390,6 +390,7 @@ class LocalStore extends ChangeNotifier {
     final value = _settings['uiStyle'];
     return value == 'miui' || value == 'material' ? value as String : 'glass';
   }
+
   ThemeColor get themeColor =>
       ThemeColor.byName(_settings['themeColor']) ?? ThemeColor.orange;
   bool get sideBarExpanded => preferences.getBool('sideBarExpanded') ?? true;

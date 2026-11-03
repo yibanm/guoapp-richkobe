@@ -17,16 +17,16 @@ Future<void> pickSource(BuildContext anchor, LocalStore store) async {
     selected: store.source,
     grid: ChoiceGrid.sources,
     action: (
-        label: '管理站源',
-            icon: Icons.tune_rounded,
-            onPressed: () => openPage<void>(
-              anchor,
-              (_) => Scaffold(
-                appBar: AppBar(title: const Text('站源管理')),
-                body: SourcesView(store: store),
-              ),
-            ),
-          ),
+      label: '管理站源',
+      icon: Icons.tune_rounded,
+      onPressed: () => openPage<void>(
+        anchor,
+        (_) => Scaffold(
+          appBar: AppBar(title: const Text('站源管理')),
+          body: SourcesView(store: store),
+        ),
+      ),
+    ),
   );
   if (value == null || value == store.source) return;
   try {

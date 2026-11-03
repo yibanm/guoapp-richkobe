@@ -130,10 +130,12 @@ void main() {
   group('sources', () {
     test('restricted sources start switched off', () async {
       final store = await openStore();
-      expect(
-        store.sources.map((site) => site.id),
-        ['hongguo', 'hanxiaoquan', 'guipian', 'sorani'],
-      );
+      expect(store.sources.map((site) => site.id), [
+        'hongguo',
+        'hanxiaoquan',
+        'guipian',
+        'sorani',
+      ]);
       for (final site in SourceSite.restrictedValues) {
         expect(store.sourceEnabled(site.id), isFalse, reason: site.id);
         expect(store.allowsSource(site.id), isFalse, reason: site.id);

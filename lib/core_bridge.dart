@@ -12,7 +12,6 @@ import 'models.dart';
 import 'danmaku_models.dart';
 import 'background_downloads.dart';
 import 'local_store.dart';
-import 'app_build.dart';
 import 'ranking_models.dart';
 import 'cover_decoder.dart';
 import 'catalog_updates.dart';
@@ -620,7 +619,7 @@ class NativeRepository extends AppRepository {
     final external = Platform.isAndroid
         ? await getExternalStorageDirectory()
         : null;
-    final build = await _call({
+    await _call({
       'action': 'initialize',
       'directory': directory.path,
       if (external != null) 'downloads': path.join(external.path, 'downloads'),

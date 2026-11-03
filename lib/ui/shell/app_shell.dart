@@ -279,10 +279,7 @@ class _AppShellState extends State<AppShell> {
             key: ValueKey('nav-${tab.name}'),
             selected: tab == _tab,
             onPressed: () => _select(tab),
-            icon: _badged(
-              tab,
-              Icon(tab == _tab ? tab.selectedIcon : tab.icon),
-            ),
+            icon: _badged(tab, Icon(tab == _tab ? tab.selectedIcon : tab.icon)),
             label: tab.label,
           ),
       ],
@@ -312,10 +309,7 @@ class _AppShellState extends State<AppShell> {
             onTabSelected: (index) => _select(AppTab.values[index]),
             tabs: [
               for (final tab in AppTab.values)
-                GlassTab(
-                  icon: _badged(tab, Icon(tab.icon)),
-                  label: tab.label,
-                ),
+                GlassTab(icon: _badged(tab, Icon(tab.icon)), label: tab.label),
             ],
           ),
         ),

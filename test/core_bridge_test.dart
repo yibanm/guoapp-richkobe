@@ -69,10 +69,7 @@ void main() {
 
     final denied = drama('2', source: 'huangdou');
     for (final request in _requests(repository, denied)) {
-      await expectLater(
-        request(),
-        _failure('当前用户没有此操作权限'),
-      );
+      await expectLater(request(), _failure('当前用户没有此操作权限'));
     }
     final allowed = drama('1');
     final episode = Episode({'id': '1'}, 1);
