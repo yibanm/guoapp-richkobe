@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -47,8 +46,6 @@ Future<void> main() async {
     } catch (_) {}
   }
   MediaKit.ensureInitialized();
-  // 玻璃材质着色器预热：纯异步磁盘 IO，不阻塞首帧
-  await LiquidGlassWidgets.initialize();
   final device = await AppDevice.detect();
   final rendering = Platform.isAndroid
       ? ', 渲染: ${await AppDevice.compatibleRendering() ? 'skia' : 'impeller'}'

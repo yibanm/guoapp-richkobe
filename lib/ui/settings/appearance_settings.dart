@@ -20,9 +20,8 @@ const displayModes = {
 };
 
 const uiStyles = {
-  'glass': '悬浮玻璃',
-  'miui': 'HyperOS 风格',
-  'material': '原生 Material',
+  'miui': 'MIUI 悬浮玻璃',
+  'material': '原生玻璃悬浮',
 };
 
 Map<String, String> get availableDisplayModes => {
@@ -135,7 +134,7 @@ class AppearanceSettings extends StatelessWidget {
           children: [
             SettingsTile(
               title: '界面风格',
-              subtitle: uiStyles[store.uiStyle] ?? uiStyles['glass']!,
+              subtitle: uiStyles[store.uiStyle] ?? uiStyles['miui']!,
               onTap: () async {
                 final selection = await showOptionDialog(
                   context,

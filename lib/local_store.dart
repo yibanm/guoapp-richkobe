@@ -385,10 +385,11 @@ class LocalStore extends ChangeNotifier {
 
   bool get followSystemColor => _flag('followSystemColor', true);
 
-  /// 界面风格：glass 悬浮玻璃底栏（默认）、miui HyperOS 风格、material 原生 Material
+  /// 界面风格：miui HyperOS 悬浮胶囊（默认）、material 原生玻璃悬浮栏；
+  /// 两档底栏均为悬浮玻璃，差异在造型语言
   String get uiStyle {
     final value = _settings['uiStyle'];
-    return value == 'miui' || value == 'material' ? value as String : 'glass';
+    return value == 'material' ? value as String : 'miui';
   }
 
   ThemeColor get themeColor =>
@@ -518,7 +519,7 @@ class LocalStore extends ChangeNotifier {
   Future<void> setFollowSystemColor(bool value) =>
       _setting('followSystemColor', value);
   Future<void> setUiStyle(String value) =>
-      value == 'glass' || value == 'miui' || value == 'material'
+      value == 'miui' || value == 'material'
       ? _setting('uiStyle', value)
       : Future.value();
   Future<void> setThemeColor(ThemeColor value) =>

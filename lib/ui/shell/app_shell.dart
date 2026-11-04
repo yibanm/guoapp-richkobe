@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_miuix/miuix.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../download_converter.dart';
 import '../../download_overview.dart';
@@ -63,6 +62,8 @@ class _AppShellState extends State<AppShell> {
   final _header = FocusNode();
   final _televisionTabs = GlobalKey();
   final _explore = GlobalKey<ExplorePageState>();
+  // 玻璃底栏的背景采样器：捕获页面内容快照供悬浮栏模糊
+  final _glassBackdrop = MiuixLayerBackdrop();
   var _tab = AppTab.explore;
   var _headerFocused = false;
   FocusNode? _lastFocus;
@@ -112,6 +113,7 @@ class _AppShellState extends State<AppShell> {
     _mineEntry.dispose();
     _header.dispose();
     _exitWindow?.cancel();
+    _glassBackdrop.dispose();
     _converter?.dispose();
     _downloads?.dispose();
     _followUpdater?.dispose();
@@ -218,7 +220,11 @@ class _AppShellState extends State<AppShell> {
       },
       child: switch (AppScope.formFactorOf(context)) {
         FormFactor.phone => Scaffold(
-          body: pages,
+          // 玻璃底栏在捕获树外采样页面内容，实现悬浮模糊
+          body: MiuixLayerBackdropCapture(
+            backdrop: _glassBackdrop,
+            child: pages,
+          ),
           bottomNavigationBar: covered ? null : _phoneBar(),
         ),
         FormFactor.pad || FormFactor.window => _wide(pages),
@@ -270,48 +276,43 @@ class _AppShellState extends State<AppShell> {
       ? _DownloadBadge(downloads: _downloads!, child: icon)
       : icon;
 
-  /// 手机底栏：悬浮玻璃（默认）/ HyperOS / 原生 Material 三风格切换
+  /// 手机底栏（一体化设计，底栏恒为悬浮玻璃）：
+  /// MIUI 风格 = HyperOS 悬浮胶囊栏；原生 Material = OS4 玻璃悬浮栏；
+  /// 两者都经 _glassBackdrop 采样身后页面内容做实时模糊
   Widget _phoneBar() => switch (widget.store.uiStyle) {
-    'miui' => MiuixNavigationBar(
-      children: [
-        for (final tab in AppTab.values)
-          MiuixNavigationBarItem(
-            key: ValueKey('nav-${tab.name}'),
-            selected: tab == _tab,
-            onPressed: () => _select(tab),
-            icon: _badged(tab, Icon(tab == _tab ? tab.selectedIcon : tab.icon)),
-            label: tab.label,
-          ),
-      ],
+    'miui' => SafeArea(
+      top: false,
+      child: MiuixFloatingNavigationBar(
+        children: [
+          for (final tab in AppTab.values)
+            MiuixFloatingNavigationBarItem(
+              key: ValueKey('nav-${tab.name}'),
+              selected: tab == _tab,
+              onPressed: () => _select(tab),
+              icon: _badged(tab, Icon(tab == _tab ? tab.selectedIcon : tab.icon)),
+              label: tab.label,
+            ),
+        ],
+      ),
     ),
-    'material' => NavigationBar(
-      selectedIndex: _tab.index,
-      onDestinationSelected: (index) => _select(AppTab.values[index]),
-      destinations: [
-        for (final tab in AppTab.values)
-          NavigationDestination(
-            key: ValueKey('nav-${tab.name}'),
-            icon: _badged(tab, Icon(tab.icon)),
-            selectedIcon: _badged(tab, Icon(tab.selectedIcon)),
-            label: tab.label,
-          ),
-      ],
-    ),
-    // glass：悬浮玻璃胶囊底栏，SafeArea 兜住手势条留白；
-    // 独立于 GlassScaffold 使用时须手动包隔离作用域，模糊才只采样身后内容
     _ => SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: GlassIsolationScope(
-          child: GlassTabBar.bottom(
-            selectedIndex: _tab.index,
-            onTabSelected: (index) => _select(AppTab.values[index]),
-            tabs: [
-              for (final tab in AppTab.values)
-                GlassTab(icon: _badged(tab, Icon(tab.icon)), label: tab.label),
-            ],
-          ),
+        child: MiuixGlassNavigationBar(
+          backdrop: _glassBackdrop,
+          selectedIndex: _tab.index,
+          onSelect: (index) => _select(AppTab.values[index]),
+          items: [
+            for (final tab in AppTab.values)
+              MiuixGlassNavigationItem(
+                icon: _badged(
+                  tab,
+                  Icon(tab == _tab ? tab.selectedIcon : tab.icon),
+                ),
+                label: tab.label,
+              ),
+          ],
         ),
       ),
     ),
