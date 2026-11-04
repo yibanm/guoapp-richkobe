@@ -54,7 +54,7 @@ func TestCustomDetailParsesObjectLinks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	drama, chapters, err := customDetailFromDocument(fixtureThreadPage, document, customTestProfile(), "1001", "https://forum.example/forum.php?mod=viewthread&tid=1001")
+	drama, chapters, err := customDetailFromDocument(fixtureThreadPage, document, customTestProfile(), "1001", "https://forum.example/forum.php?mod=viewthread&tid=1001", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestCustomDetailRejectsLoginWall(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := customDetailFromDocument(fixtureLoginWall, document, customTestProfile(), "1001", "https://forum.example/forum.php?mod=viewthread&tid=1001"); err == nil ||
+	if _, _, err := customDetailFromDocument(fixtureLoginWall, document, customTestProfile(), "1001", "https://forum.example/forum.php?mod=viewthread&tid=1001", nil); err == nil ||
 		!strings.Contains(err.Error(), "Cookie") {
 		t.Fatalf("login wall must report cookie hint, got %v", err)
 	}
@@ -95,4 +95,43 @@ func TestCustomResolveDirectLink(t *testing.T) {
 		t.Fatal("empty chapter must fail")
 	}
 	_ = context.Background()
+}
+
+const fixtureOptagPage = `<html><head><title>【视频】测试帖 - 论坛</title></head><body>
+<table class="optag"><thead><tr id="optag-325-head-tr"><th>正在加载</th></tr></thead>
+<tbody id="optag-325-body"></tbody></table>
+</body></html>`
+
+const fixtureDownloadJSON = `[{"name":"下载地址1","files":[
+{"name":"视频14-地铁站.mp4.min.mp4","url":"https://objectstorage.us-phoenix-1.oraclecloud.com/n/ns/b/opvideo/o/325/a.mp4.min.mp4"},
+{"name":"视频15-商场.mp4","url":"https://objectstorage.us-phoenix-1.oraclecloud.com/n/ns/b/opvideo/o/326/b.mp4.min.mp4"}]}]`
+
+func TestCustomDetailUsesDownloadLinkJSON(t *testing.T) {
+	document, err := parseHTMLString(fixtureOptagPage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ids := customOptagIDs(fixtureOptagPage)
+	if len(ids) != 1 || ids[0] != "325" {
+		t.Fatalf("optag ids = %v", ids)
+	}
+	downloads := map[string]string{"325": fixtureDownloadJSON}
+	drama, chapters, err := customDetailFromDocument(
+		fixtureOptagPage, document, customTestProfile(), "1001",
+		"https://forum.example/forum.php?mod=viewthread&tid=1001", downloads)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(chapters) != 2 {
+		t.Fatalf("chapters = %d, want 2", len(chapters))
+	}
+	if chapters[0].Title != "视频14-地铁站.mp4" {
+		t.Fatalf("chapter 0 title = %q", chapters[0].Title)
+	}
+	if !strings.Contains(chapters[1].VideoURL, "/o/326/") {
+		t.Fatalf("chapter 1 url = %q", chapters[1].VideoURL)
+	}
+	if drama.EpisodeCount != nil && fmt.Sprint(drama.EpisodeCount) != "2" {
+		t.Fatalf("episode count = %v", drama.EpisodeCount)
+	}
 }

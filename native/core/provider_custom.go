@@ -155,6 +155,15 @@ func slugOf(profile customProfile) string {
 	return rest
 }
 
+// customOrigin 取论坛地址的站点根（downloadLink 接口挂在根路径 /op/ 下）
+func customOrigin(base string) string {
+	parsed, err := url.Parse(base)
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+		return strings.TrimSuffix(base, "/")
+	}
+	return parsed.Scheme + "://" + parsed.Host
+}
+
 func pageHasNext(document *html.Node, page int) bool {
 	next := strconv.Itoa(page + 1)
 	for _, anchor := range providerHTMLNodes(document, func(node *html.Node) bool { return node.Data == "a" }) {
@@ -169,6 +178,61 @@ func pageHasNext(document *html.Node, page int) bool {
 
 var customObjectLink = regexp.MustCompile(`https?://objectstorage[^\s"'<>]+`)
 
+// 帖子页内联脚本的下载面板标记：id="optag-<编号>-head-tr" / "-body"，
+// 页面 JS 用该编号调 /op/downloadLink?id=<编号> 实时取回视频直链 JSON
+var customOptagID = regexp.MustCompile(`id="optag-(\d+)-(?:head-tr|body)"`)
+
+type customDownloadGroup struct {
+	Name  string `json:"name"`
+	Files []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"files"`
+}
+
+func customOptagIDs(body string) []string {
+	var ids []string
+	seen := map[string]bool{}
+	for _, match := range customOptagID.FindAllStringSubmatch(body, -1) {
+		if !seen[match[1]] {
+			seen[match[1]] = true
+			ids = append(ids, match[1])
+		}
+	}
+	return ids
+}
+
+// customChaptersFromDownloadJSON 把 downloadLink 接口响应转成分集
+func customChaptersFromDownloadJSON(raw, source, tid, pageURL string, startIndex int) ([]Chapter, error) {
+	var groups []customDownloadGroup
+	if err := json.Unmarshal([]byte(raw), &groups); err != nil {
+		return nil, err
+	}
+	var chapters []Chapter
+	index := startIndex
+	for _, group := range groups {
+		for _, file := range group.Files {
+			if file.URL == "" {
+				continue
+			}
+			index++
+			title := strings.TrimSuffix(file.Name, ".min.mp4")
+			if title == "" {
+				title = "第 " + strconv.Itoa(index) + " 集"
+			}
+			chapters = append(chapters, Chapter{
+				ID:       providerChapterID(source, tid, strconv.Itoa(index)),
+				Source:   source,
+				Title:    title,
+				VideoURL: file.URL,
+				PageURL:  pageURL,
+				Referer:  pageURL,
+			})
+		}
+	}
+	return chapters, nil
+}
+
 // customDetail 抓帖子页，把对象存储直链按出现顺序转成分集
 func (d *Downloader) customDetail(ctx context.Context, profile customProfile, tid string) (Drama, []Chapter, error) {
 	address := fmt.Sprintf("%s/forum.php?mod=viewthread&tid=%s",
@@ -182,38 +246,57 @@ func (d *Downloader) customDetail(ctx context.Context, profile customProfile, ti
 	if parseErr != nil {
 		return Drama{}, nil, parseErr
 	}
-	return customDetailFromDocument(body, document, profile, tid, address)
+	// 页面 JS 用 optag 编号实时调站点根的 /op/downloadLink 取视频直链，raw HTML 只有编号
+	downloads := map[string]string{}
+	origin := customOrigin(profile.Base)
+	for _, id := range customOptagIDs(body) {
+		api := fmt.Sprintf("%s/op/downloadLink?id=%s", origin, url.QueryEscape(id))
+		if raw, fetchErr := d.fetchProviderText(ctx, api, address); fetchErr == nil {
+			downloads[id] = raw
+		}
+	}
+	return customDetailFromDocument(body, document, profile, tid, address, downloads)
 }
 
-// customDetailFromDocument 从帖子页提取对象存储直链作分集（纯解析，供测试）
-func customDetailFromDocument(body string, document *html.Node, profile customProfile, tid, pageURL string) (Drama, []Chapter, error) {
+// customDetailFromDocument 从帖子页提取分集（纯解析，供测试）：
+// 优先 downloadLink 接口 JSON（页面 JS 的真实数据源），回退页内对象存储直链
+func customDetailFromDocument(body string, document *html.Node, profile customProfile, tid, pageURL string, downloads map[string]string) (Drama, []Chapter, error) {
 	if strings.Contains(body, "请 登录") || strings.Contains(body, "提示信息") {
 		return Drama{}, nil, errors.New("自定义源登录态失效：请在设置里更新 Cookie")
 	}
 	source := customSourcePrefix + ":" + slugOf(profile)
 	title := customPageTitle(document)
-	links := customObjectLink.FindAllString(body, -1)
-	if len(links) == 0 {
-		return Drama{}, nil, errors.New("该帖没有解析到视频直链")
-	}
-	seen := map[string]bool{}
 	var chapters []Chapter
-	index := 0
-	for _, raw := range links {
-		link := strings.TrimSpace(raw)
-		if seen[link] {
+	for _, id := range customOptagIDs(body) {
+		raw, ok := downloads[id]
+		if !ok || strings.TrimSpace(raw) == "" {
 			continue
 		}
-		seen[link] = true
-		index++
-		chapters = append(chapters, Chapter{
-			ID:       providerChapterID(source, tid, strconv.Itoa(index)),
-			Source:   source,
-			Title:    customEpisodeTitle(body, link, index),
-			VideoURL: link,
-			PageURL:  pageURL,
-			Referer:  profile.Base + "/",
-		})
+		parsed, err := customChaptersFromDownloadJSON(raw, source, tid, pageURL, len(chapters))
+		if err == nil {
+			chapters = append(chapters, parsed...)
+		}
+	}
+	if len(chapters) == 0 {
+		seen := map[string]bool{}
+		for _, raw := range customObjectLink.FindAllString(body, -1) {
+			link := strings.TrimSpace(raw)
+			if seen[link] {
+				continue
+			}
+			seen[link] = true
+			chapters = append(chapters, Chapter{
+				ID:       providerChapterID(source, tid, strconv.Itoa(len(chapters)+1)),
+				Source:   source,
+				Title:    customEpisodeTitle(body, link, len(chapters)+1),
+				VideoURL: link,
+				PageURL:  pageURL,
+				Referer:  profile.Base + "/",
+			})
+		}
+	}
+	if len(chapters) == 0 {
+		return Drama{}, nil, errors.New("该帖没有解析到视频直链")
 	}
 	drama := Drama{
 		ID:           providerDramaID(source, tid),
